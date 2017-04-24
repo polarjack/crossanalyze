@@ -4,6 +4,8 @@ var csv = require('fast-csv')
 
 var chicken = require('./chicken_white.json')
 var duck = require('./duck.json')
+var goose = require('./goose.json')
+
 
 
 function threemonth(data, what) {
@@ -32,6 +34,7 @@ function threemonth(data, what) {
 }
 
 function grouping(data, groupby, what) {
+
     var first = 0,
         second = 0,
         third = 0,
@@ -41,25 +44,32 @@ function grouping(data, groupby, what) {
         tday = 0,
         forthday = 0;
     data.reverse().map((value, index) => {
-            if(value[what] == "休市")
+            if(value[what] == "休市" || value[what] == "0")
                 value[what] = 0
             if (index < groupby[0] - 1) {
                 first += parseInt(value[what])
                 fday += 1
+                if(value[what] == 0)
+                    fday -= 1
             } else if (index < groupby[1] - 1) {
                 second += parseInt(value[what])
                 sday += 1
+                if(value[what] == 0)
+                    sday -= 1
             } else if (index < groupby[2] - 1) {
                 third += parseInt(value[what])
                 tday += 1
+                if(value[what] == 0)
+                    tday -= 1
             } else if (index < groupby[3] - 1) {
                 forth += parseInt(value[what])
                 forthday += 1
+                if(value[what] == 0)
+                    forthday -= 1
             } else {
 
             }
         })
-    
     return [first / fday, second / sday, third / tday, forth / forthday].map(i => i.toFixed(2));
 }
 
@@ -94,22 +104,39 @@ function buildcsv(filename, data) {
         .pipe( fs.createWriteStream(filename+'.csv', {encoding: "utf8"}));
 }
 
-// var aa = threemonth(duck, "肉鵝(白羅曼)")
-// var bb = threemonth(duck, "正番鴨(公)")
-// var cc = threemonth(duck, "土番鴨(75天)")
-// var dd = threemonth(duck, "鴨蛋(新蛋)(台南)")
+function duckpart() {
+    var aa = threemonth(duck, "肉鵝(白羅曼)")
+    var bb = threemonth(duck, "正番鴨(公)")
+    var cc = threemonth(duck, "土番鴨(75天)")
+    var dd = threemonth(duck, "鴨蛋(新蛋)(台南)")
 
-// var input =[aa, bb, cc, dd]
+    var input =[aa, bb, cc, dd]
 
-// buildcsv("鴨", input)
+    buildcsv("鴨", input)
+}
 
-var keys = []
-for(var k in chicken[0]) keys.push(k);
-keys.shift()
-keys.shift()
-var input = []
-keys.map((i) => {
-    input.push(threemonth(chicken, i))
-})
-buildcsv("雞", input)
+function chickenpart() {
+    var keys = []
+    for(var k in chicken[0]) keys.push(k);
+    keys.shift()
+    keys.shift()
+    var input = []
+    keys.map((i) => {
+        input.push(threemonth(chicken, i))
+    })
+    buildcsv("雞(白肉雞)", input)
+}
+function goosepart() {
+    var keys = []
+    for(var k in goose[0]) keys.push(k);
+    keys.shift()
+    var input = []
+    keys.map((i) => {
+        input.push(threemonth(goose, i))
+    })
+    buildcsv("鵝", input)
+}
+duckpart()
+chickenpart()
+
 
